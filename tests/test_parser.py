@@ -1,15 +1,16 @@
 import pytest
 import sys
 import os
-import importlib  
-sys.path.append(os.path.pathsep.join(__file__.split()[:-1]))
-aws_sts_tool = importlib.import_module('aws-sts-tool')
+# print(os.path.sep.join(__file__.split(os.path.sep)[:-3]))
+# sys.path.append(os.path.sep.join(__file__.split(os.path.sep)[:-3]))
+from aws_sts_tool import cli
 
 ''' Test for parser '''
 
 def test_no_arguments_passed(capsys):
     ''' Test for no arguments passed '''
-    parser = aws_sts_tool.createParser()
+    # print(aws_sts_tool)
+    parser = cli.createParser()
     with pytest.raises(SystemExit):
         parser.parse_args([])
     captured = capsys.readouterr()
