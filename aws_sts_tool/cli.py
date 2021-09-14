@@ -3,7 +3,7 @@ import sys
 import os
 import argparse
 import json
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError
 from helpers.datetimeencoder import DateTimeEncoder
 from _version import __version__
 
@@ -70,23 +70,29 @@ def writeCredentials(credentials,output):
 
 def fetchCredentials(roleArn,sessionName,duration,output,sts):
     credentials = None
-    if duration != None:
+    if duration == None:
         try:
             credentials = sts.assume_role(
-                roleArn = roleArn,
-                roleSessionName = sessionName
+                RoleArn = roleArn,
+                RoleSessionName = sessionName
             )
-        except Exception as e:
-            raise e
+        except NoCredentialsError as e:
+            raise Exception(f"{e}: Please make sure you have credentials to use STS")
+        except ClientError as e1:
+            raise Exception("{}\n\nEither the credentials used do not have permissions".format(e1) +
+            "to access the role: {} OR\nthe role: {} does not exist.".format(roleArn,roleArn))
     else:
         try: 
             credentials = sts.assume_role(
-                roleArn = roleArn,
-                roleSessionName = sessionName,
+                RoleArn = roleArn,
+                RoleSessionName = sessionName,
                 DurationSeconds = int(duration)
             )
-        except Exception as e:
-            raise e
+        except NoCredentialsError as e:
+            raise Exception(f"{e}: Please make sure you have credentials to use STS")
+        except ClientError as e1:
+            raise Exception("{}\n\nEither the credentials used do not have permissions".format(e1) +
+            "to access the role: {} OR\nthe role: {} does not exist.".format(roleArn,roleArn))
     if credentials != None:
         try:
             writeCredentials(credentials['Credentials'],output)
