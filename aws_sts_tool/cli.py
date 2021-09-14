@@ -3,7 +3,7 @@ import sys
 import os
 import argparse
 import json
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError
 from helpers.datetimeencoder import DateTimeEncoder
 from _version import __version__
 
@@ -45,17 +45,30 @@ def getPath():
 def writeCredentialsToJson(credentials):
     path = getPath()
     try:
-        with open(f"{path}{os.path.sep}credentials.json") as f:
-            f.write(json.dumps(
-                credentials,cls=DateTimeEncoder
-            ))
+        with open(f"{path}{os.path.sep}credentials.json",'w') as f:
+            f.write(json.dumps({
+                "AWS_ACCESS_KEY_ID": credentials['AccessKeyId'],
+                "AWS_SECRET_ACCESS_KEY": credentials['SecretAccessKey'],
+                "AWS_SESSION_TOKEN": credentials['SessionToken']
+            },cls=DateTimeEncoder))
+            f.close()
+        print("Credentials stored in file: credentials.json")
     except Exception as e:
-        print(f'Could not write credentials to file: {path}')
+        print(f'Could not write credentials to file: {path}{os.path.sep}credentials.json')
         sys.exit()
 
 def writeCredentialsToShell(credentials):
-    # TODO
-    return None
+    path = getPath()
+    try:
+        with open(f"{path}{os.path.sep}credentials.sh",'w') as f:
+            f.write("AWS_ACCESS_KEY_ID={}".format(credentials['AccessKeyId']))
+            f.write("AWS_SECRET_ACCESS_KEY={}".format(credentials['SecretAccessKey']))
+            f.write("AWS_SESSION_TOKEN={}".format(credentials['SessionToken']))
+            f.close()
+        print("Credentials stored in file: credentials.sh")
+    except Exception as e:
+        print(f'Could not write credentials to file: {path}{os.path.sep}credentials.sh')
+        sys.exit()
 
 def writeCredentials(credentials,output):
     if output == "both":
@@ -70,28 +83,34 @@ def writeCredentials(credentials,output):
 
 def fetchCredentials(roleArn,sessionName,duration,output,sts):
     credentials = None
-    if duration != None:
+    if duration == None:
         try:
             credentials = sts.assume_role(
-                roleArn = roleArn,
-                roleSessionName = sessionName
+                RoleArn = roleArn,
+                RoleSessionName = sessionName
             )
-        except Exception as e:
-            raise e
+        except NoCredentialsError as e:
+            raise Exception(f"{e}: Please make sure you have credentials to use STS")
+        except ClientError as e1:
+            raise Exception("{}\n\nEither the credentials used do not have permissions".format(e1) +
+            "to access the role: {} OR\nthe role: {} does not exist.".format(roleArn,roleArn))
     else:
         try: 
             credentials = sts.assume_role(
-                roleArn = roleArn,
-                roleSessionName = sessionName,
+                RoleArn = roleArn,
+                RoleSessionName = sessionName,
                 DurationSeconds = int(duration)
             )
-        except Exception as e:
-            raise e
+        except NoCredentialsError as e:
+            raise Exception(f"{e}: Please make sure you have credentials to use STS")
+        except ClientError as e1:
+            raise Exception("{}\n\nEither the credentials used do not have permissions".format(e1) +
+            "to access the role: {} OR\nthe role: {} does not exist.".format(roleArn,roleArn))
     if credentials != None:
         try:
             writeCredentials(credentials['Credentials'],output)
         except ValueError as e:
-            print(f"{type(e).__name__}: {e}")
+            raise Exception(f"{type(e).__name__}: {e}")
 
 def main(args):
     toolParser = createParser()
@@ -108,6 +127,7 @@ def main(args):
         sys.exit(1)
     try:
         fetchCredentials(roleArn,arguments['sessionName'],arguments['duration'],arguments['output'],stsClient)
+        print("Successfully stored credentials for role: {} at {}".format(roleArn,getPath()))
     except Exception as e:
         print(e)
         sys.exit(1)
