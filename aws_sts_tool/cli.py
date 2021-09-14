@@ -45,17 +45,30 @@ def getPath():
 def writeCredentialsToJson(credentials):
     path = getPath()
     try:
-        with open(f"{path}{os.path.sep}credentials.json") as f:
-            f.write(json.dumps(
-                credentials,cls=DateTimeEncoder
-            ))
+        with open(f"{path}{os.path.sep}credentials.json",'w') as f:
+            f.write(json.dumps({
+                "AWS_ACCESS_KEY_ID": credentials['AccessKeyId'],
+                "AWS_SECRET_ACCESS_KEY": credentials['SecretAccessKey'],
+                "AWS_SESSION_TOKEN": credentials['SessionToken']
+            },cls=DateTimeEncoder))
+            f.close()
+        print("Credentials stored in file: credentials.json")
     except Exception as e:
-        print(f'Could not write credentials to file: {path}')
+        print(f'Could not write credentials to file: {path}{os.path.sep}credentials.json')
         sys.exit()
 
 def writeCredentialsToShell(credentials):
-    # TODO
-    return None
+    path = getPath()
+    try:
+        with open(f"{path}{os.path.sep}credentials.sh",'w') as f:
+            f.write("AWS_ACCESS_KEY_ID={}".format(credentials['AccessKeyId']))
+            f.write("AWS_SECRET_ACCESS_KEY={}".format(credentials['SecretAccessKey']))
+            f.write("AWS_SESSION_TOKEN={}".format(credentials['SessionToken']))
+            f.close()
+        print("Credentials stored in file: credentials.sh")
+    except Exception as e:
+        print(f'Could not write credentials to file: {path}{os.path.sep}credentials.sh')
+        sys.exit()
 
 def writeCredentials(credentials,output):
     if output == "both":
@@ -97,7 +110,7 @@ def fetchCredentials(roleArn,sessionName,duration,output,sts):
         try:
             writeCredentials(credentials['Credentials'],output)
         except ValueError as e:
-            print(f"{type(e).__name__}: {e}")
+            raise Exception(f"{type(e).__name__}: {e}")
 
 def main(args):
     toolParser = createParser()
@@ -114,6 +127,7 @@ def main(args):
         sys.exit(1)
     try:
         fetchCredentials(roleArn,arguments['sessionName'],arguments['duration'],arguments['output'],stsClient)
+        print("Successfully stored credentials for role: {} at {}".format(roleArn,getPath()))
     except Exception as e:
         print(e)
         sys.exit(1)
