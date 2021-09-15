@@ -17,11 +17,11 @@ def createParser():
     '''
     parser = argparse.ArgumentParser(prog='aws_sts_tool',
     description='Program to fetch temporary AWS credentials.',
-    usage='aws-sts-tool.py account_id sessionName roleName [duration]')
+    usage='aws-sts-tool.py account_id sessionName roleName output [duration]')
     parser.add_argument('account_id',help='12 digit AWS account ID.')
     parser.add_argument('sessionName',help='Session name to use.')
     parser.add_argument('roleName',help='Role to assume.')
-    parser.add_argument('output',help='Output format.\nMust be one of json, shell or both')
+    parser.add_argument('output',help='Output format.\nMust be one of json, shell or both.')
     parser.add_argument('-v','--version',action='version',version='aws_sts_tool: v{}'.format(getVersion()),help='Displays version.')
     parser.add_argument('--duration',
     help='The duration in seconds to assume.\nDefaults to 1 hr or the duration configured on the role.')
@@ -158,17 +158,9 @@ def fetchCredentials(roleArn,sessionName,duration,output,sts):
         except ValueError as e:
             raise Exception(f"{type(e).__name__}: {e}")
 
-def main(args):
-    '''
-        Program starts here.
-
-        Parameters
-        --------------
-        args    - Command line arguments.
-    '''
-    
+def main():
     toolParser = createParser()
-    arguments = vars(toolParser.parse_args(args))
+    arguments = vars(toolParser.parse_args())
     try:
         stsClient = createSTSClient()
     except ClientError:
@@ -187,4 +179,4 @@ def main(args):
         sys.exit(1)
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
