@@ -8,7 +8,7 @@ from helpers.datetimeencoder import DateTimeEncoder
 from _version import __version__
 
 def getVersion():
-    '''Returns version of package'''
+    '''Returns version of package.'''
     return __version__
 
 def createParser():
@@ -29,20 +29,37 @@ def createParser():
     return parser
 
 def createSTSClient():
+    '''
+        Return sts client object.
+    '''
     try:
         return boto3.client('sts')
     except Exception:
         raise ClientError
 
 def createRoleARN(account,roleName):
+    '''
+        Returns the created role ARN.
+    '''
     if(len(account)!=12):
         raise AttributeError("Account number is not valid")
     return f"arn:aws:iam::{account}:role/{roleName}"
 
 def getPath():
+    '''
+        Returns the path where the credentials will be stored.
+    '''
     return os.path.abspath(os.path.curdir)
 
 def writeCredentialsToJson(credentials):
+    '''
+        Writes the credentials to credentials.json file.
+
+        Parameters
+        ----------------
+        credentials - the credentials objects fetched via the sts client.
+    '''
+
     path = getPath()
     try:
         with open(f"{path}{os.path.sep}credentials.json",'w') as f:
@@ -58,6 +75,14 @@ def writeCredentialsToJson(credentials):
         sys.exit()
 
 def writeCredentialsToShell(credentials):
+    '''
+        Writes the credentials to credentials.sh file.
+
+        Parameters
+        ----------------
+        credentials - the credentials objects fetched via the sts client.
+    '''
+
     path = getPath()
     try:
         with open(f"{path}{os.path.sep}credentials.sh",'w') as f:
@@ -71,6 +96,15 @@ def writeCredentialsToShell(credentials):
         sys.exit()
 
 def writeCredentials(credentials,output):
+    '''
+        Intermediate method to chose which type of credentials format is required.
+
+        Parameters
+        ----------------
+        credentials - the credentials objects fetched via the sts client.
+        output      - the output format required.
+    '''
+
     if output == "both":
         writeCredentialsToJson(credentials)
         writeCredentialsToShell(credentials)
@@ -82,6 +116,18 @@ def writeCredentials(credentials,output):
         raise ValueError("Invalid output format. Must be one of json | shell | both.")
 
 def fetchCredentials(roleArn,sessionName,duration,output,sts):
+    '''
+        Used to get the credentials from AWS using STS client.
+
+        Parameters
+        ---------------
+        roleArn     - The role to be assumed for credentials.
+        sessionName - The name to be associated with the session.
+        duration    - Duration for credentials to be active.
+        output      - The output format required.
+        sts         - the STS client.
+    '''
+
     credentials = None
     if duration == None:
         try:
@@ -113,6 +159,14 @@ def fetchCredentials(roleArn,sessionName,duration,output,sts):
             raise Exception(f"{type(e).__name__}: {e}")
 
 def main(args):
+    '''
+        Program starts here.
+
+        Parameters
+        --------------
+        args    - Command line arguments.
+    '''
+    
     toolParser = createParser()
     arguments = vars(toolParser.parse_args(args))
     try:
