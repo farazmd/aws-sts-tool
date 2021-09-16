@@ -23,7 +23,7 @@ def createParser():
     parser.add_argument('roleName',help='Role to assume.')
     parser.add_argument('output',help='Output format.\nMust be one of json, shell or both.')
     parser.add_argument('-v','--version',action='version',version='aws_sts_tool: v{}'.format(getVersion()),help='Displays version.')
-    parser.add_argument('--duration',
+    parser.add_argument('--duration',type=int,
     help='The duration in seconds to assume.\nDefaults to 1 hr or the duration configured on the role.')
     
     return parser
@@ -138,8 +138,11 @@ def fetchCredentials(roleArn,sessionName,duration,output,sts):
         except NoCredentialsError as e:
             raise Exception(f"{e}: Please make sure you have credentials to use STS")
         except ClientError as e1:
-            raise Exception("{}\n\nEither the credentials used do not have permissions".format(e1) +
-            "to access the role: {} OR\nthe role: {} does not exist.".format(roleArn,roleArn))
+            if 'DurationSeconds exceeds' in e1.args[0]:
+                raise e1
+            else:
+                raise Exception("{}\n\nEither the credentials used do not have permissions ".format(e1) +
+                "to access the role: {} OR\nthe role: {} does not exist.".format(roleArn,roleArn))
     else:
         try: 
             credentials = sts.assume_role(
@@ -150,7 +153,10 @@ def fetchCredentials(roleArn,sessionName,duration,output,sts):
         except NoCredentialsError as e:
             raise Exception(f"{e}: Please make sure you have credentials to use STS")
         except ClientError as e1:
-            raise Exception("{}\n\nEither the credentials used do not have permissions".format(e1) +
+            if 'DurationSeconds exceeds' in e1.args[0]:
+                raise e1
+            else:
+                raise Exception("{}\n\nEither the credentials used do not have permissions ".format(e1) +
             "to access the role: {} OR\nthe role: {} does not exist.".format(roleArn,roleArn))
     if credentials != None:
         try:
