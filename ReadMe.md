@@ -1,6 +1,6 @@
 # AWS STS Tool
 
-[![aws-sts-tool CI](https://github.com/farazmd/aws-sts-tool/actions/workflows/ci.yaml/badge.svg)](https://github.com/farazmd/aws-sts-tool/actions/workflows/ci.yaml)
+[![aws_sts_tool CI](https://github.com/farazmd/aws-sts-tool/actions/workflows/ci.yaml/badge.svg)](https://github.com/farazmd/aws-sts-tool/actions/workflows/ci.yaml)
 
 
 A CLI tool to help assume AWS role via STS. Useful in automated environments and cross account access requirements for workflows involving AWS.
