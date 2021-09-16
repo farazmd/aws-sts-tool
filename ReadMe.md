@@ -5,14 +5,12 @@
 
 A CLI tool to help assume AWS role via STS. Useful in automated environments and cross account access requirements for workflows involving AWS.
 
----
 
 ## Prerequisites
 
 - A AWS user/role credentials that would be used as a trust relation with the roles that need to be assumed.
 - Python >= 3.7
 
----
 
 ## Installation
 
@@ -21,7 +19,6 @@ Run the following to install the tool using pip.
 ```shell
 pip install aws_sts_tool
 ```
----
 
 ## Usage
 
