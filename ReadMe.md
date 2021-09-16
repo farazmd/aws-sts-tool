@@ -69,3 +69,8 @@ aws_sts_tool 123456789012 test-session test-role json --duration 7200
 ```
 
 - Once the command executes successfully, it will store the credentials for the role assumed in `credentials.{ json | sh }` at the `location` from where the command is executed.
+  
+
+## License
+
+[MIT License](LICENSE)
