@@ -1,6 +1,6 @@
 import setuptools,os
 
-with open("Readme.md", "r", encoding="utf-8") as fh:
+with open("ReadMe.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 with open('requirements.txt') as f:
     requirements = f.readlines()
