@@ -104,13 +104,15 @@ def writeCredentials(credentials,output):
         credentials - the credentials objects fetched via the sts client.
         output      - the output format required.
     '''
-
     if output == "both":
+        print("Storing credentials....")
         writeCredentialsToJson(credentials)
         writeCredentialsToShell(credentials)
     elif output == "json":
+        print("Storing credentials....")
         writeCredentialsToJson(credentials)
     elif output == "shell":
+        print("Storing credentials....")
         writeCredentialsToShell(credentials)
     else:
         raise ValueError("Invalid output format. Must be one of json | shell | both.")
