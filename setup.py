@@ -28,6 +28,6 @@ setuptools.setup(
                 'aws_sts_tool = aws_sts_tool.cli:main'
             ]
         },
-    install_requires = [requirements]
+    install_requires = [requirements],
     python_requires=">=3.7",
 )
