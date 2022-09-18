@@ -86,9 +86,9 @@ def writeCredentialsToShell(credentials):
     path = getPath()
     try:
         with open(f"{path}{os.path.sep}credentials.sh",'w') as f:
-            f.write("AWS_ACCESS_KEY_ID={}".format(credentials['AccessKeyId']))
-            f.write("AWS_SECRET_ACCESS_KEY={}".format(credentials['SecretAccessKey']))
-            f.write("AWS_SESSION_TOKEN={}".format(credentials['SessionToken']))
+            f.write("export AWS_ACCESS_KEY_ID={}\n".format(credentials['AccessKeyId']))
+            f.write("export AWS_SECRET_ACCESS_KEY={}\n".format(credentials['SecretAccessKey']))
+            f.write("export AWS_SESSION_TOKEN={}\n".format(credentials['SessionToken']))
             f.close()
         print("Credentials stored in file: credentials.sh")
     except Exception as e:
